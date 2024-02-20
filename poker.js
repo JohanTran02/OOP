@@ -25,7 +25,7 @@ class Deck {
             "Ace"
         ];
         this.originalDeck = [];
-        // this.shuffledDeck = [...this.originalDeck];
+        this.shuffledDeck = [];
         //Lägg alla korten som har tagits bort från kortleken
         this.removedCards = [];
     }
@@ -34,12 +34,7 @@ class Deck {
         const deck = [];
         this.suits.forEach((suit) => {
             this.name.forEach((name, value) => {
-                if (name === "Ace") {
-                    deck.push(new Card(name, 14, suit));
-                }
-                else {
-                    deck.push(new Card(name, value + 1, suit));
-                }
+                deck.push(new Card(name, value + 2, suit));
             })
         });
         return deck;
@@ -49,37 +44,61 @@ class Deck {
         return this.originalDeck = deck;
     }
 
+    set ShuffledDeck(deck) {
+        return this.shuffledDeck = deck;
+    }
+
+    get shuffled() {
+        return this.shuffledDeck;
+    }
+
     static shuffle(deck) {
         for (let i = deck.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [deck[i], deck[j]] = [deck[j], deck[i]];
         }
+        return deck;
     }
 
-    static giveCards(originalDeck) {
-        const splicedDeck = originalDeck.splice(originalDeck.length - player.cardAmount, player.cardAmount);
-        console.log(splicedDeck);
+    giveCards(deck, cardAmount) {
+        const splicedDeck = deck.shuffled.splice(deck.shuffled.length - cardAmount, cardAmount);
+        deck.removedCards.push(splicedDeck);
+        return splicedDeck;
+    }
+
+
+    removeCards(...cardAmount) {
+        const result = player.cards.filter(card => !cardAmount.includes(card));
+        console.log(player.cards);
+        console.log(result);
     }
 }
 
-class Player extends Deck {
+class Player {
     constructor(name) {
-        super()
         this.name = name;
-        this.cardAmount = 5;
-        this.cardHand = [];
+        this.cardsHand = [];
     }
-    
-    test() {
-        
+
+    set CardsHand(cards) {
+        return this.cardsHand = cards;
+    }
+
+    get cards() {
+        return this.cardsHand;
     }
 }
 
 const deck = new Deck();
+const player = new Player();
+const player2 = new Player();
 deck.Deck = deck.createDeck();
-Deck.shuffle(deck.originalDeck);
+// console.log(deck.originalDeck);
+deck.ShuffledDeck = Deck.shuffle(deck.originalDeck);
 
-const player = new Player("test");
+player.CardsHand = deck.giveCards(deck, 5);
+player2.CardsHand = deck.giveCards(deck, 5);
 
-
-// Deck.giveCards(deck.originalDeck);
+// console.log(player.cards);
+// console.log(player2.cards);
+deck.removeCards(player.cards[0], player.cards[3], player.cards[2])
