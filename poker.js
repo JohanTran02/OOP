@@ -25,7 +25,6 @@ class Deck {
             "Ace"
         ];
         this.originalDeck = [];
-        this.shuffledDeck = [];
         //Lägg alla korten som har tagits bort från kortleken
         this.removedCards = [];
     }
@@ -44,12 +43,8 @@ class Deck {
         return this.originalDeck = deck;
     }
 
-    set ShuffledDeck(deck) {
-        return this.shuffledDeck = deck;
-    }
-
-    get shuffled() {
-        return this.shuffledDeck;
+    get Deck() {
+        return this.originalDeck;
     }
 
     static shuffle(deck) {
@@ -60,17 +55,23 @@ class Deck {
         return deck;
     }
 
-    giveCards(deck, cardAmount) {
-        const splicedDeck = deck.shuffled.splice(deck.shuffled.length - cardAmount, cardAmount);
-        deck.removedCards.push(splicedDeck);
-        return splicedDeck;
+    reset() {
+        this.removedCards = [...new Set(this.removedCards.flatMap((x) => [...x]))];
+        this.originalDeck = [...this.originalDeck, ...this.removedCards];
+        this.removedCards = [];
+        Deck.shuffle(this.originalDeck);
     }
 
+    giveCards(player, deck, cardAmount) {
+        const splicedDeck = deck.originalDeck.splice(-(cardAmount), cardAmount);
+        player.Cards = [...player.Cards, ...splicedDeck];
+        deck.removedCards.push(splicedDeck);
+    }
 
-    removeCards(...cardAmount) {
-        const result = player.cards.filter(card => !cardAmount.includes(card));
-        console.log(player.cards);
-        console.log(result);
+    removeCards(player, playerCards) {
+        const result = player.Cards.filter(card => !playerCards.includes(card));
+        player.Cards = [...result];
+        deck.removedCards.push(playerCards);
     }
 }
 
@@ -84,21 +85,50 @@ class Player {
         return this.cardsHand = cards;
     }
 
-    get cards() {
+    get Cards() {
         return this.cardsHand;
+    }
+
+    set Cards(cards) {
+        return this.cardsHand = cards;
+    }
+
+    get cardSum() {
+        return this.Cards.map(card => card.value).reduce((result, current) => result + current, 0);
     }
 }
 
 const deck = new Deck();
-const player = new Player();
-const player2 = new Player();
+const player = new Player("Slim");
+const player2 = new Player("Lucas");
 deck.Deck = deck.createDeck();
-// console.log(deck.originalDeck);
-deck.ShuffledDeck = Deck.shuffle(deck.originalDeck);
 
-player.CardsHand = deck.giveCards(deck, 5);
-player2.CardsHand = deck.giveCards(deck, 5);
+Deck.shuffle(deck.Deck);
+console.log([...deck.Deck]);
 
-// console.log(player.cards);
-// console.log(player2.cards);
-deck.removeCards(player.cards[0], player.cards[3], player.cards[2])
+deck.giveCards(player, deck, 5);
+deck.giveCards(player2, deck, 5);
+
+console.log(deck.removedCards);
+console.log(deck.Deck);
+console.log(player);
+console.log(player2);
+
+deck.removeCards(player, [player.Cards[0], player.Cards[1]]);
+deck.removeCards(player2, [player2.Cards[0], player2.Cards[1]]);
+
+deck.giveCards(player, deck, 2);
+deck.giveCards(player2, deck, 2);
+
+console.log(deck.Deck);
+console.log(player);
+console.log(player2);
+
+deck.removeCards(player, player.Cards);
+deck.removeCards(player2, player2.Cards);
+
+deck.reset();
+
+console.log(deck.removedCards);
+console.log(deck.originalDeck);
+
